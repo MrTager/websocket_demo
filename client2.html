@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>客户端2</title>
+    <style>
+        #messageLog {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="messageLog"></div>
+    <input type="text" id="inputBox" placeholder="输入消息">
+    <button onclick="sendMessage()">发送</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        const socket = io('http://localhost:3000/chat');
+
+        // 连接成功
+        socket.on('connect', () => {
+            logMessage('系统：Socket.IO 连接已建立');
+        });
+
+        // 接收消息
+        socket.on('message', (data) => {
+            if (typeof data === 'string') {
+                logMessage(`服务器：${data}`);
+            } else if (data.sender && data.content) {
+                logMessage(`${data.sender}：${data.content}`);
+            } else {
+                logMessage(`服务器：${JSON.stringify(data)}`);
+            }
+        });
+
+        socket.on('notification', (data) => {
+            logMessage(`服务器：${data}`);
+        });
+
+        socket.on('joinRoom', (data) => {
+            logMessage(`服务器：${data}`);
+        });
+
+        // 接收欢迎消息
+        socket.on('welcome', (data) => {
+            logMessage(`服务器：${data}`);
+        });
+
+        // 错误处理
+        socket.on('error', (error) => {
+            logMessage(`系统错误：${error.type}`);
+        });
+
+        // 连接关闭
+        socket.on('disconnect', () => {
+            logMessage('系统：连接已关闭');
+        });
+
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('inputBox');
+            if (input.value.trim()) {
+                socket.emit('message', "用户2___"+input.value);
+                logMessage(`我：${input.value}`);
+                input.value = '';
+            }
+        }
+
+        // 日志显示
+        function logMessage(text) {
+            const logDiv = document.getElementById('messageLog');
+            const messageElement = document.createElement('div');
+            messageElement.textContent = text;
+            logDiv.appendChild(messageElement);
+            logDiv.scrollTop = logDiv.scrollHeight; // 自动滚动到底部
+        }
+    </script>
+</body>
+</html>
